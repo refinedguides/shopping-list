@@ -3,24 +3,6 @@ const shoppingForm = document.querySelector(".shopping-form");
 const filterButtons = document.querySelectorAll("[data-filter]");
 const clearButtons = document.querySelectorAll("[data-clear]");
 
-document.addEventListener("DOMContentLoaded", initialize);
-
-function initialize() {
-  loadItems();
-  handleDragDrop();
-  updateNotice();
-
-  shoppingForm.addEventListener("submit", handleFormSubmit);
-
-  filterButtons.forEach(function (button) {
-    button.addEventListener("click", handleFilterSelection);
-  });
-
-  clearButtons.forEach(function (button) {
-    button.addEventListener("click", handleClearItems);
-  });
-}
-
 function saveItems() {
   const listItems = shoppingList.querySelectorAll("li");
 
@@ -67,13 +49,13 @@ function createListItem(shoppingItem) {
 
   // delete button
   const button = document.createElement("button");
-  button.innerHTML = "&times";
+  button.innerHTML = '<i class="ri-delete-bin-7-line"></i>';
   button.classList.add("delete-button");
   button.addEventListener("click", removeItem);
 
   // drag icon
   const span = document.createElement("span");
-  span.innerHTML = "&equiv;";
+  span.innerHTML = '<i class="ri-equal-line"></i>';
   span.classList.add("drag-icon");
 
   const li = document.createElement("li");
@@ -83,14 +65,14 @@ function createListItem(shoppingItem) {
 
   li.appendChild(input);
   li.appendChild(div);
-  li.appendChild(button);
   li.appendChild(span);
+  li.appendChild(button);
 
   return li;
 }
 
 function removeItem(e) {
-  const listItem = e.target.parentNode;
+  const listItem = e.target.closest("li");
 
   shoppingList.removeChild(listItem);
 
@@ -178,9 +160,19 @@ function handleDragDrop() {
 
   shoppingList.addEventListener("dragstart", function (e) {
     dragItem = e.target;
+    setTimeout(() => e.target.classList.add("dragging"), 0);
+    e.dataTransfer.setData("text/plain", "");
+    e.dataTransfer.dropEffect = "move";
+  });
+
+  shoppingList.addEventListener("dragend", function (e) {
+    dragItem = null;
+    e.target.classList.remove("dragging");
+    saveItems();
   });
 
   shoppingList.addEventListener("dragover", function (e) {
+    e.preventDefault();
     const targetItem = e.target.closest("li");
 
     if (targetItem && targetItem !== dragItem) {
@@ -191,8 +183,6 @@ function handleDragDrop() {
         targetIndex > dragIndex ? targetItem.nextSibling : targetItem;
 
       shoppingList.insertBefore(dragItem, item);
-
-      saveItems();
     }
   });
 }
@@ -252,3 +242,20 @@ function updateNotice() {
 function generateUniqueId() {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
+
+function initialize() {
+  shoppingForm.addEventListener("submit", handleFormSubmit);
+
+  filterButtons.forEach(function (button) {
+    button.addEventListener("click", handleFilterSelection);
+  });
+
+  clearButtons.forEach(function (button) {
+    button.addEventListener("click", handleClearItems);
+  });
+}
+
+loadItems();
+handleDragDrop();
+updateNotice();
+initialize();
